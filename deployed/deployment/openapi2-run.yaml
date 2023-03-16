@@ -1,0 +1,358 @@
+# openapi2-run.yaml
+swagger: '2.0'
+info:
+  title: ESD Gateway 
+  description: API Gateway for Themepark Queue Management System
+  version: 1.0.0
+schemes:
+- https
+# produces:
+# - application/json
+paths:
+  /crowd:
+    options:
+      operationId: corsA
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      summary: get total crowd at theme park
+      operationId: getTotalCrowd
+      x-google-backend:
+        address: https://attractions-wy3g4hhdja-uc.a.run.app/attractions/all
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /forecast:
+    options:
+      operationId: corsB
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      summary: get latest weather forecase from NEA 
+      operationId: getWeather
+      x-google-backend:
+        address: https://weather-check-wy3g4hhdja-uc.a.run.app/weatherCheck/forecast
+      responses:
+        '200':
+          description: A successful response
+  /register:
+    options:
+      summary: cors preflight
+      operationId: addCustomerToDBPreflight
+      x-google-backend:
+        address: https://customers-wy3g4hhdja-uc.a.run.app/customers/add
+      responses:
+        '200':
+          description: A successful response
+    post:
+      summary: add new customer to database
+      operationId: addCustomerToDB
+      x-google-backend:
+        address: https://customers-wy3g4hhdja-uc.a.run.app/customers/add
+      responses:
+        '200':
+          description: A successful response
+  /attractionDetails/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsZ
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: get details of an attraction
+      operationId: getDetails
+      x-google-backend:
+        address: https://attraction-details-wy3g4hhdja-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /remove:
+    options:
+      summary: remove people from attraction Queue preflight
+      operationId: removePreflight
+      x-google-backend:
+        address: https://update-queue-wy3g4hhdja-uc.a.run.app/updateQueue/remove
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+    post:
+      summary: remove people from attraction Queue
+      operationId: remove
+      x-google-backend:
+        address: https://update-queue-wy3g4hhdja-uc.a.run.app/updateQueue/remove
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /availability/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsE
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: get availability of an attraction
+      operationId: getAvailability
+      x-google-backend:
+        address: https://weather-check-wy3g4hhdja-uc.a.run.app/weatherCheck
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        '200':
+          description: A successful response
+  /viewStatus/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsF
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: for admin to get the status of an attraction queue wait time and number of people
+      operationId: getQueueAdmin
+      x-google-backend:
+        address: https://view-status-wy3g4hhdja-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /attractionSorted/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsG
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: get list of customers in queue sorted by time they join
+      operationId: getCustomers
+      x-google-backend:
+        address: https://attractions-wy3g4hhdja-uc.a.run.app/attractions
+        path_translation: APPEND_PATH_TO_ADDRESS
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /dashboard/pie:
+    options:
+      operationId: corsH
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      summary: get breakdown of queue logs for pie chart
+      operationId: loadPieData
+      x-google-backend:
+        address: https://dashboard-wy3g4hhdja-uc.a.run.app/dashboard/pie
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /dashboard/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsI
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: get queue log data for attraction line chart
+      operationId: loadLineData
+      x-google-backend:
+        address: https://dashboard-wy3g4hhdja-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      security:
+        - api_key: []
+      responses:
+        '200':
+          description: A successful response
+  /viewStatus/status/{customer}/{attraction}:
+    options:
+      parameters:
+        - in: path
+          name: customer
+          type: string
+          required: true
+          description: customer ID
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      operationId: corsJ
+      x-google-backend:
+        address: https://us-central1-esd-g9t7.cloudfunctions.net/enableCORS-1
+      responses:
+        '200':
+          description: A successful response
+        '204':
+          description: preflight
+    get:
+      parameters:
+        - in: path
+          name: customer
+          type: string
+          required: true
+          description: customer ID
+        - in: path
+          name: attraction
+          type: string
+          required: true
+          description: name of the attraction.
+      summary: for customer to get the status of an attraction queue wait time and number of people
+      operationId: getQueueCustomer
+      x-google-backend:
+        address: https://view-status-wy3g4hhdja-uc.a.run.app
+        path_translation: APPEND_PATH_TO_ADDRESS
+      responses:
+        '200':
+          description: A successful response
+  /leave:
+    options:
+      summary: customer leave attraction Queue preflight
+      operationId: leaveQueuePreflight
+      x-google-backend:
+        address: https://update-queue-wy3g4hhdja-uc.a.run.app/updateQueue/leave
+      responses:
+        '200':
+          description: A successful response
+    post:
+      summary: customer leave attraction Queue
+      operationId: leaveQueue
+      x-google-backend:
+        address: https://update-queue-wy3g4hhdja-uc.a.run.app/updateQueue/leave
+      responses:
+        '200':
+          description: A successful response
+  /join:
+    options:
+      summary: customer join attraction Queue
+      operationId: joinQueueOptions
+      x-google-backend:
+        address: https://join-queue-wy3g4hhdja-uc.a.run.app/joinQueue/join
+      responses:
+        '200':
+          description: A successful response
+    post:
+      summary: customer join attraction Queue
+      operationId: joinQueue
+      x-google-backend:
+        address: https://join-queue-wy3g4hhdja-uc.a.run.app/joinQueue/join
+      responses:
+        '200':
+          description: A successful response
+securityDefinitions:
+  # This section configures basic authentication with an API key.
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+
+
+
+
+
+
+

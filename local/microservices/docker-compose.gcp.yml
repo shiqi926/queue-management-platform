@@ -1,0 +1,33 @@
+##
+# docker-compose.gcp.yml
+#
+# Usage:
+#   export DOCKER_IMAGE_TAG=$(git rev-parse --short HEAD)
+#   docker-compose -f docker-compose.yml -f docker-compose.gcp.yml
+##
+version: '3'
+
+services:
+    attraction_details:
+        image: gcr.io/esd-g9t7/attraction_details
+    attractions:
+        image: gcr.io/esd-g9t7/attractions
+    rabbitmq:
+        image: gcr.io/esd-g9t7/rabbitmq
+    customers:
+        image: gcr.io/esd-g9t7/customers
+    queue_logs:
+        image: gcr.io/esd-g9t7/queue_logs
+    queue_logs_receiver:
+        image: gcr.io/esd-g9t7/queue_logs_receiver
+    join_queue:
+        image: gcr.io/esd-g9t7/join_queue
+    update_queue:
+        image: gcr.io/esd-g9t7/update_queue
+    view_status:
+        image: gcr.io/esd-g9t7/view_status
+    weather_check:
+        image: gcr.io/esd-g9t7/weather_check
+    dashboard:
+        image: gcr.io/esd-g9t7/dashboard
+

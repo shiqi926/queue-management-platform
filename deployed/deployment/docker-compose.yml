@@ -1,0 +1,153 @@
+version: "3.8"
+
+volumes:
+  rabbitmq_data:
+
+services:
+
+  #############################################################
+  # Attraction Details: The Attraction Details microservice
+  #############################################################
+  attraction_details:
+    build:
+      context: ./
+      dockerfile: attraction_details/Dockerfile
+    image: local/esd-g9t7/attraction_details
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+  #######################################################
+  # Attractions: The Attractions microservice
+  #######################################################
+  attractions:
+    build:
+      context: ./
+      dockerfile: attractions/Dockerfile
+    image: local/esd-g9t7/attractions/
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+      
+  #################################################
+  # Customers: The Customers microservice
+  #################################################
+  customers:
+    build:
+      context: ./
+      dockerfile: customers/Dockerfile
+    image: local/esd-g9t7/customers
+    restart: always
+    ports:
+      - "8080:${PORT:-8080}"
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  ##############################################
+  # Queue Logs: The Queue Logs microservice
+  ##############################################
+  queue_logs:
+    build:
+      context: ./
+      dockerfile: queue_logs/Dockerfile
+    image: local/esd-g9t7/queue_logs
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+  ##############################################
+  # Join Queue: The Join Queue microservice
+  ##############################################
+  join_queue:
+    build:
+      context: ./
+      dockerfile: join_queue/Dockerfile
+    image: local/esd-g9t7/join_queue
+    restart: always
+    environment:
+      customers_URL: https://customers-wy3g4hhdja-uc.a.run.app/customers
+      attractions_URL: https://attractions-wy3g4hhdja-uc.a.run.app/attractions
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+  ##################################################
+  # Update Queue: The Update Queue microservice
+  ##################################################
+  update_queue:
+    build:
+      context: ./
+      dockerfile: update_queue/Dockerfile
+    image: local/esd-g9t7/update_queue
+    restart: always
+    depends_on:
+      - customers
+      - attractions
+    environment:
+      customers_URL: https://customers-wy3g4hhdja-uc.a.run.app/customers
+      attractions_URL: https://attractions-wy3g4hhdja-uc.a.run.app/attractions
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+  ##################################################
+  # View Status: The View Status microservice
+  ##################################################
+  view_status:
+    build:
+      context: ./
+      dockerfile: view_status/Dockerfile
+    image: local/esd-g9t7/view_status
+    restart: always
+    depends_on:
+      - attractions
+      - customers
+      - attraction_details
+    environment:
+      customers_URL: https://customers-wy3g4hhdja-uc.a.run.app/customers
+      attractions_URL: https://attractions-wy3g4hhdja-uc.a.run.app/attractions
+      attraction_details_URL: https://attraction-details-wy3g4hhdja-uc.a.run.app/attractionDetails
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+  ####################################################
+  # Weather Check: The Weather Check microservice
+  ####################################################
+  weather_check:
+    build:
+      context: ./
+      dockerfile: weather_check/Dockerfile
+    image: local/esd-g9t7/weather_check
+    restart: always
+    environment:
+      attraction_details_URL: https://attraction-details-wy3g4hhdja-uc.a.run.app/attractionDetails
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"
+
+
+
+  ###################################################
+  # Dashboard: The Dashboard complex microservice
+  ###################################################
+  dashboard:
+    build:
+      context: ./
+      dockerfile: dashboard/Dockerfile
+    image: local/esd-g9t7/dashboard
+    restart: always
+    depends_on:
+      - queue_logs
+    environment:
+      queueLogs_URL: https://queue-logs-wy3g4hhdja-uc.a.run.app/queueLogs
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8080:${PORT:-8080}"

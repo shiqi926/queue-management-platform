@@ -1,0 +1,193 @@
+version: "3.8"
+
+volumes:
+  rabbitmq_data:
+
+services:
+
+  #############################################################
+  # Attraction Details:5002 The Attraction Details microservice
+  #############################################################
+  attraction_details:
+    build:
+      context: ./
+      dockerfile: attraction_details/Dockerfile
+    image: yingtingng/attraction_details:esd
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5002:5002"
+
+  #######################################################
+  # Attractions:5001 The Attractions microservice
+  #######################################################
+  attractions:
+    build:
+      context: ./
+      dockerfile: attractions/Dockerfile
+    image: yingtingng/attractions:esd
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5001:5001"
+
+  ####################################
+  # RabbitMQ: The messaging broker   
+  ####################################
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: esd-rabbit
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes: 
+      - rabbitmq_data:/var/lib/rabbitmq
+      
+  #################################################
+  # Customers:5000 The Customers microservice
+  #################################################
+  customers:
+    build:
+      context: ./
+      dockerfile: customers/Dockerfile
+    image: yingtingng/customers:esd
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      PYTHONUNBUFFERED: 1
+
+  ##############################################
+  # Queue Logs:5003 The Queue Logs microservice
+  ##############################################
+  queue_logs:
+    build:
+      context: ./
+      dockerfile: queue_logs/Dockerfile
+    image: yingtingng/queue_logs:esd
+    restart: always
+    environment:
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "5003:5003"
+
+  queue_logs_receiver:
+    build:
+      context: ./
+      dockerfile: queue_logs_receiver/Dockerfile
+    image: yingtingng/queue_logs_receiver:esd
+    restart: always
+    depends_on: 
+      - rabbitmq
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      PYTHONUNBUFFERED: 1
+
+
+  ##############################################
+  # Join Queue:7000 The Join Queue microservice
+  ##############################################
+  join_queue:
+    build:
+      context: ./
+      dockerfile: join_queue/Dockerfile
+    image: yingtingng/join_queue:esd
+    restart: always
+    depends_on:
+      - customers
+      - attractions
+      - rabbitmq
+      - queue_logs_receiver
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      customers_URL: http://customers:5000/customers
+      attractions_URL: http://attractions:5001/attractions
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "7000:7000"
+
+
+  ##################################################
+  # Update Queue:8000 The Update Queue microservice
+  ##################################################
+  update_queue:
+    build:
+      context: ./
+      dockerfile: update_queue/Dockerfile
+    image: yingtingng/update_queue:esd
+    restart: always
+    depends_on:
+      - customers
+      - attractions
+      - rabbitmq
+      - queue_logs_receiver
+    environment:
+      rabbit_host: rabbitmq
+      rabbit_port: 5672
+      customers_URL: http://customers:5000/customers
+      attractions_URL: http://attractions:5001/attractions 
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8000:8000"
+
+  ##################################################
+  # View Status:7001 The View Status microservice
+  ##################################################
+  view_status:
+    build:
+      context: ./
+      dockerfile: view_status/Dockerfile
+    image: yingtingng/view_status:esd
+    restart: always
+    depends_on:
+      - attractions
+      - customers
+      - attraction_details
+    environment:
+      customers_URL: http://customers:5000/customers
+      attractions_URL: http://attractions:5001/attractions 
+      attraction_details_URL: http://attraction_details:5002/attractionDetails
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "7001:7001"
+
+  ####################################################
+  # Weather Check:7002 The Weather Check microservice
+  ####################################################
+  weather_check:
+    build:
+      context: ./
+      dockerfile: weather_check/Dockerfile
+    image: yingtingng/weather_check:esd
+    restart: always
+    depends_on:
+      - attraction_details
+    environment:
+      attraction_details_URL: http://attraction_details:5002/attractionDetails
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "7002:7002"
+
+
+
+  ###################################################
+  # Dashboard:7003 The Dashboard complex microservice
+  ###################################################
+  dashboard:
+    build:
+      context: ./
+      dockerfile: dashboard/Dockerfile
+    image: yingtingng/dashboard:esd
+    restart: always
+    depends_on:
+      - queue_logs
+    environment:
+      queueLogs_URL: http://queue_logs:5003/queueLogs
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "7003:7003"
